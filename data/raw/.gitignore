@@ -2,3 +2,5 @@ data/raw/*.csv
 data/raw/*.zip
 data/raw/*.csv
 *.csv
+*.csv
+*.zip
