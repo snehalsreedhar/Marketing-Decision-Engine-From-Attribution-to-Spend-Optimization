@@ -1,18 +1,19 @@
 import pandas as pd
+from pathlib import Path
+import pandas as pd
+from src.config import ROOT
 
-def load_data(path: str, nrows: int = None) -> pd.DataFrame:
-    """
-    Load dataset from parquet or csv
-    """
+def load_data(path, nrows=None):
+    path = str(path) 
 
-    print(f"📥 Loading data from: {path}")
+    full_path = ROOT / path
+    print(f"📥 Loading: {full_path}")
 
     if path.endswith(".parquet"):
-        df = pd.read_parquet(path)
-    elif path.endswith(".csv"):
-        df = pd.read_csv(path, nrows=nrows)
-    else:
-        raise ValueError("Unsupported file format")
+        return pd.read_parquet(full_path)
 
-    print(f"   Shape: {df.shape}")
-    return df
+    return pd.read_csv(
+        full_path,
+        dtype={'fullVisitorId': 'str'},
+        nrows=nrows
+    )

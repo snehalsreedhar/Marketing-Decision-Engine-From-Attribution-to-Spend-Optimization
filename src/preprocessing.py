@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+from src.data_loader import load_data
 
 JSON_COLUMNS = [
     'device', 'geoNetwork', 'totals', 'trafficSource'
@@ -63,7 +64,7 @@ def _clean_and_select(df: pd.DataFrame) -> pd.DataFrame:
         'visitStartTime',
         'channelGrouping',
         'totals.transactions',
-        'totals.totalTransactionRevenue'
+        'totals.transactionRevenue'   # FIXED
     ]
 
     cols = [c for c in cols if c in df.columns]
@@ -77,13 +78,15 @@ def _clean_and_select(df: pd.DataFrame) -> pd.DataFrame:
         df.index
     )
 
-    df['totals.totalTransactionRevenue'] = _safe_numeric(
-        df.get('totals.totalTransactionRevenue'),
+    df['totals.transactionRevenue'] = _safe_numeric(
+        df.get('totals.transactionRevenue'),
         df.index
     )
 
-    # Revenue conversion
-    df['revenue'] = df['totals.totalTransactionRevenue'] / 1e6
+    # ----------------------------
+    # Revenue conversion (FIXED)
+    # ----------------------------
+    df['revenue'] = df['totals.transactionRevenue'] / 1e6
 
     # ----------------------------
     # TIMESTAMP CONVERSION
@@ -96,7 +99,6 @@ def _clean_and_select(df: pd.DataFrame) -> pd.DataFrame:
         )
 
     return df
-
 
 # ----------------------------
 # MAIN PIPELINE FUNCTION
@@ -112,9 +114,8 @@ def preprocess_data(
 
     print("📥 Loading raw data...")
 
-    df = pd.read_csv(
+    df = load_data(
         input_path,
-        dtype={'fullVisitorId': 'str'},
         nrows=nrows
     ) if nrows else pd.read_csv(
         input_path,

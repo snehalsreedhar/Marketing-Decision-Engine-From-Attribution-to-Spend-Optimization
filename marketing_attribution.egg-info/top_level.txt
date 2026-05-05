@@ -1,0 +1,6 @@
+app
+data
+notebooks
+outputs
+scripts
+src
