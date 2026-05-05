@@ -1,7 +1,16 @@
 import pandas as pd
+import numpy as np
 import json
 import os
 from src.data_loader import load_data
+
+EXTRA_PLACEHOLDERS = [
+    "not available in demo dataset",
+    "(not set)",
+    "unknown.unknown",
+    "",
+    "NA"
+]
 
 # ----------------------------
 # ALL JSON COLUMNS (UPDATED)
@@ -131,13 +140,46 @@ def preprocess_data(
 
     return df
 
-def save_to_excel(df: pd.DataFrame, output_path: str = "outputs/cleaned_data.xlsx"):
-    """Save dataframe to Excel in outputs folder"""
 
-    # Create folder if it doesn't exist
+# ----------------------------
+# SAVING OUTPUTS
+# ----------------------------
+
+def save_to_excel(df: pd.DataFrame, output_path: str = None):
+
+    if output_path is None:
+        output_path = input("Enter output file path (e.g. outputs/data.xlsx): ")
+
+    if not output_path.endswith(".xlsx"):
+        output_path += ".xlsx"
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    # Write Excel file
     df.to_excel(output_path, index=False)
 
     print(f"💾 Saved cleaned data to {output_path}")
+
+
+# ------------------------------------------
+# DROPPING MISSING VALUES/ UNAVAILABLE DATA
+# ------------------------------------------
+
+
+def clean_placeholders(df):
+
+    cols_to_drop = [
+        col for col in df.columns
+        if df[col].isin(EXTRA_PLACEHOLDERS).all()
+    ]
+
+    df = df.drop(columns=cols_to_drop)
+
+    # ----------------------------
+    # STEP 2: REPLACE PARTIAL VALUES WITH NaN
+    # ----------------------------
+    df = df.replace(EXTRA_PLACEHOLDERS, np.nan)
+
+    print(f"🧹 Dropped {len(cols_to_drop)} fully-placeholder columns")
+    print(f"🧹 Replaced placeholder values with NaN")
+
+    return df, cols_to_drop
